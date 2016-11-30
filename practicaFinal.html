@@ -1,0 +1,270 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<html>
+
+<head>
+	<title>Evolución demográfica CyL</title>
+	<script src="https://d3js.org/d3.v3.min.js"></script>
+	<style>
+		.monigotes {
+			width: 10%;
+		}
+
+		#img1 {
+			filter: brightness(100%)
+		}
+
+		#img2 {
+			filter: brightness(110%)
+		}
+
+		#img3 {
+			filter: brightness(120%)
+		}
+
+		#img4 {
+			filter: brightness(130%)
+		}
+
+		#img5 {
+			filter: brightness(140%)
+		}
+
+		#img6 {
+			filter: brightness(150%)
+		}
+
+		#img7 {
+			filter: brightness(160%)
+		}
+
+		#img8 {
+			filter: brightness(170%)
+		}
+
+		#img9 {
+			filter: brightness(180%)
+		}
+
+		#img10 {
+			filter: brightness(190%)
+		}
+		body{
+			margin-left: 20%;
+		}
+		
+		#grafico2{
+			margin-top: 10vh;
+		}
+	</style>
+</head>
+
+<body>
+	
+
+	<div id="grafico2">
+	</div>
+
+	<script>
+	// NOTAS
+	// Ver como poder juntar elementos.
+		var color = "";
+		var id = "";
+		var maxWidth = "100%";
+		var maxHeight = "100%";
+		var tamFigura = "";
+		var densidadTotal = 0;
+		var poblacionTotal = 0;
+		var densidad = {};
+		var evolucion = {};
+		var habitantes = {};
+		
+		var colorFigura = d3.scale.linear()
+			.domain([90, 120])
+			.range([170, 100]);
+
+		var tamFigura = d3.scale.linear()
+			.domain([80, 120])
+			.range([4, 16]);
+
+		var x = {
+			Ávila: 23,
+			Burgos: 31,
+			León: 17,
+			Palencia: 26,
+			Salamanca: 15,
+			Segovia: 28,
+			Soria: 39,
+			Valladolid: 23,
+			Zamora: 18,
+		};
+		var y = {
+			Ávila: 31,
+			Burgos: 14,
+			León: 13,
+			Palencia: 15,
+			Salamanca: 30,
+			Segovia: 24,
+			Soria: 22,
+			Valladolid: 20,
+			Zamora: 22
+		};
+
+		var svg = d3.select('#grafico2')
+			.append('svg')
+			.attr('width', maxWidth)
+			.attr('height', maxHeight)
+			.attr('viewBox', "0 0 100 55");
+
+		d3.csv("datosEvolucion.csv", function(error, data) {
+			data.forEach(function(d) {
+				provincia = d.provincia;
+				if (d.año == 2014) {
+					poblacionTotal = poblacionTotal + parseInt(d.habitantes);
+					densidadTotal = densidadTotal + parseInt(d.densidad);
+					densidad[provincia] = Math.round((d.habitantes/d.superficie) * 100) / 100;
+					evolucion[provincia] = Math.round(d.evolucion * 100) / 100;
+					habitantes[provincia] = d.habitantes;
+				}
+
+
+				//console.log(d.provincia, d.año, d.habitantes, d.evolucion, d.superficie, d.densidad);
+				var a = colorFigura(evolucion[d.provincia])+'%';
+				var filter = "brightness("+a+")";
+				var tamanio = tamFigura(evolucion[d.provincia]) + "%";
+				//console.log(tamanio);
+				//console.log(filter);
+				svg.append('image')
+					.attr('xlink:href', "imagenes/family2.png")
+					.attr('x', x[provincia])
+					.attr('y', y[provincia])
+					.attr("width", tamanio)
+					.attr('height', tamanio)
+					.attr("id", "img1")
+					.style("filter", filter) //Cambiar esta linea para que sea dinamica y lo mismo para el tamaño
+					.on("mouseover", mouseOver)
+					.on("mouseout", mouseOut);
+
+				function mouseOut() {
+					svg.selectAll(".negative").remove();
+					//svg.selectAll("#img1").style('filter', 'grayscale(0)');
+				}
+
+				function mouseOver() {
+					svg.selectAll(".negative").remove();
+					//svg.selectAll("#img1").style('filter', 'grayscale(0.5)');
+
+					svg.append('image')
+						.attr('xlink:href', "imagenes/bubble.png")
+						.attr('x', x[d.provincia] + 2.5)
+						.attr('y', y[d.provincia] - 9)
+						.attr("width", "20%")
+						.attr('height', "20%")
+						.attr("id", "img1")
+						.attr("class", "negative");
+
+					svg.append('text')
+						.attr('x', x[d.provincia] + 9)
+						.attr('y', y[d.provincia] - 6.5)
+						.attr('font-size', '1.5')
+						.text(d.provincia)
+						.attr("class", "negative");
+
+					svg.append('text')
+						.attr('x', x[d.provincia] + 8)
+						.attr('y', y[d.provincia] - 5)
+						.attr('font-size', '1')
+						.text("Habitantes: " + habitantes[d.provincia])
+						.attr("class", "negative");
+					svg.append('text')
+						.attr('x', x[d.provincia] + 8)
+						.attr('y', y[d.provincia] - 4)
+						.attr('font-size', '1')
+						.text("Densidad: " + densidad[d.provincia])
+						.attr("class", "negative");
+					svg.append('text')
+						.attr('x', x[d.provincia] + 8)
+						.attr('y', y[d.provincia] - 3)
+						.attr('font-size', '1')
+						.text("Evolución: " + evolucion[d.provincia] + "%")
+						.attr("class", "negative");
+
+				}
+			});
+
+			svg.append('text')
+				.attr('x', '35%')
+				.attr('y', '88%')
+				.attr('fill', 'white')
+				.attr('font-size', '1.8')
+				.text("Número de habitantes totales: " + poblacionTotal.toLocaleString('de-DE'));;
+			svg.append('text')
+				.attr('x', '35%')
+				.attr('y', '93%')
+				.attr('fill', 'white')
+				.attr('font-size', '1.8')
+				.text("Densidad de población total: " + densidadTotal.toLocaleString('de-DE') + " hab/km");
+		})
+		svg.append('text')
+			.attr('x', 4)
+			.attr('y', 3)
+			.attr('font-size', '4')
+			.text("Evolución demográfica Castilla y León");
+		svg.append('text')
+			.attr('x', '25%')
+			.attr('y', 7)
+			.attr('font-size', '4')
+			.text("2009 - 2014");
+
+		svg.append('image')
+			.attr('xlink:href', "imagenes/mapaVacio.png")
+			.attr('x', 10)
+			.attr('y', 0)
+			.attr('width', '60')
+			.attr('height', '60');
+
+		svg.append('text')
+			.attr('x', '12%')
+			.attr('y', '78%')
+			.attr('font-size', '3')
+			.text("% Evolución");	
+			
+		svg.append('image')
+			.attr('xlink:href', "imagenes/family2.png")
+			.attr('x', '5%')
+			.attr('y', '81%')
+			.attr('width', '15%')
+			.attr('height', '15%')
+			.attr('id', 'img1');
+			
+		
+
+		svg.append('image')
+			.attr('xlink:href', "imagenes/family2.png")
+			.attr('x', '15%')
+			.attr('y', '84%')
+			.attr('width', '12%')
+			.attr('height', '12%')
+			.attr('id', 'img5');
+
+		svg.append('image')
+			.attr('xlink:href', "imagenes/family2.png")
+			.attr('x', '25%')
+			.attr('y', '88%')
+			.attr('width', '8%')
+			.attr('height', '8%')
+			.attr('id', 'img9');
+
+		svg.append('rect')
+			.attr('x', '34%')
+			.attr('y', '83%')
+			.attr('width', '32')
+			.attr('height', '7')
+			.attr('fill', '#99F7FF')
+			.attr('rx', '1')
+			.attr('ry', '1');
+	</script>
+
+</body>
+
+</html>
