@@ -1,3 +1,5 @@
+<!-- Realizado por Raul Rodriguez Carracedo, para la asignatura de "Disenio y evaluacion de sistemas interactivos"-->
+
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01">
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <html>
@@ -15,59 +17,31 @@
 		}
 
 		#img2 {
-			filter: brightness(110%)
+			filter: brightness(145%)
 		}
 
 		#img3 {
-			filter: brightness(120%)
-		}
-
-		#img4 {
-			filter: brightness(130%)
-		}
-
-		#img5 {
-			filter: brightness(140%)
-		}
-
-		#img6 {
-			filter: brightness(150%)
-		}
-
-		#img7 {
-			filter: brightness(160%)
-		}
-
-		#img8 {
-			filter: brightness(170%)
-		}
-
-		#img9 {
 			filter: brightness(180%)
 		}
 
-		#img10 {
-			filter: brightness(190%)
-		}
-		body{
+		body {
 			margin-left: 20%;
 		}
-		
-		#grafico2{
+
+		#grafico2 {
 			margin-top: 10vh;
 		}
 	</style>
 </head>
 
 <body>
-	
 
-	<div id="grafico2">
+
+	<div id="grafico">
 	</div>
 
 	<script>
-	// NOTAS
-	// Ver como poder juntar elementos.
+		// Declaracio de variables
 		var color = "";
 		var id = "";
 		var maxWidth = "100%";
@@ -78,15 +52,20 @@
 		var densidad = {};
 		var evolucion = {};
 		var habitantes = {};
-		
+		var flecha = "";
+		var ajusteDialogo;
+
+		// Escala para el color de las figuras
 		var colorFigura = d3.scale.linear()
-			.domain([90, 120])
+			.domain([95, 110])
 			.range([170, 100]);
 
+		// Escala para el tamanio de las figuras
 		var tamFigura = d3.scale.linear()
 			.domain([80, 120])
 			.range([4, 16]);
 
+		// Posicion (x, y) de cada una de las provincias
 		var x = {
 			Ávila: 23,
 			Burgos: 31,
@@ -110,30 +89,32 @@
 			Zamora: 22
 		};
 
-		var svg = d3.select('#grafico2')
+		// Creamos el svg y lo aadimos al div #grafico
+		var svg = d3.select('#grafico')
 			.append('svg')
 			.attr('width', maxWidth)
 			.attr('height', maxHeight)
 			.attr('viewBox', "0 0 100 55");
 
+		// Lectura del fichero
 		d3.csv("datosEvolucion.csv", function(error, data) {
 			data.forEach(function(d) {
 				provincia = d.provincia;
 				if (d.año == 2014) {
 					poblacionTotal = poblacionTotal + parseInt(d.habitantes);
 					densidadTotal = densidadTotal + parseInt(d.densidad);
-					densidad[provincia] = Math.round((d.habitantes/d.superficie) * 100) / 100;
-					evolucion[provincia] = Math.round(d.evolucion * 100) / 100;
+					densidad[provincia] = Math.round((d.habitantes / d.superficie) * 100) / 100;
+					evolucion[provincia] = (Math.round(d.evolucion * 100) / 100);
 					habitantes[provincia] = d.habitantes;
 				}
 
 
 				//console.log(d.provincia, d.año, d.habitantes, d.evolucion, d.superficie, d.densidad);
-				var a = colorFigura(evolucion[d.provincia])+'%';
-				var filter = "brightness("+a+")";
+				var a = colorFigura(evolucion[d.provincia]) + '%';
+				var filter = "brightness(" + a + ")";
 				var tamanio = tamFigura(evolucion[d.provincia]) + "%";
-				//console.log(tamanio);
-				//console.log(filter);
+
+				// Imagenes de las figuras que se iran aniadiendo dinamicamente segun se lea el fichero
 				svg.append('image')
 					.attr('xlink:href', "imagenes/family2.png")
 					.attr('x', x[provincia])
@@ -141,57 +122,78 @@
 					.attr("width", tamanio)
 					.attr('height', tamanio)
 					.attr("id", "img1")
-					.style("filter", filter) //Cambiar esta linea para que sea dinamica y lo mismo para el tamaño
+					.style("filter", filter)
 					.on("mouseover", mouseOver)
 					.on("mouseout", mouseOut);
 
+				// Funcion que elimina todos los elementos que añade la funcion de mouseOver
 				function mouseOut() {
 					svg.selectAll(".negative").remove();
-					//svg.selectAll("#img1").style('filter', 'grayscale(0)');
 				}
 
+				// Funcion para añadir el cuadro de dialogo cuando se pasa el raton por encima de una figura
 				function mouseOver() {
 					svg.selectAll(".negative").remove();
-					//svg.selectAll("#img1").style('filter', 'grayscale(0.5)');
-
+					ajusteDialogo = (Math.round((evolucion[d.provincia] - 100) * 100) / 1000);
 					svg.append('image')
 						.attr('xlink:href', "imagenes/bubble.png")
-						.attr('x', x[d.provincia] + 2.5)
-						.attr('y', y[d.provincia] - 9)
-						.attr("width", "20%")
-						.attr('height', "20%")
+						.attr('x', x[d.provincia] + 2 + ajusteDialogo)
+						.attr('y', y[d.provincia] - 10)
+						.attr("width", "23%")
+						.attr('height', "23%")
 						.attr("id", "img1")
-						.attr("class", "negative");
+						.attr("class", "negative")
+						.append('g');
 
 					svg.append('text')
-						.attr('x', x[d.provincia] + 9)
-						.attr('y', y[d.provincia] - 6.5)
+						.attr('x', x[d.provincia] + 10 + ajusteDialogo)
+						.attr('y', y[d.provincia] - 7.3)
 						.attr('font-size', '1.5')
 						.text(d.provincia)
-						.attr("class", "negative");
+						.attr("class", "negative")
+						.append('g');
 
 					svg.append('text')
-						.attr('x', x[d.provincia] + 8)
-						.attr('y', y[d.provincia] - 5)
+						.attr('x', x[d.provincia] + 8.7 + ajusteDialogo)
+						.attr('y', y[d.provincia] - 5.5)
 						.attr('font-size', '1')
 						.text("Habitantes: " + habitantes[d.provincia])
-						.attr("class", "negative");
+						.attr("class", "negative")
+						.append('g');
 					svg.append('text')
-						.attr('x', x[d.provincia] + 8)
-						.attr('y', y[d.provincia] - 4)
+						.attr('x', x[d.provincia] + 8.7 + ajusteDialogo)
+						.attr('y', y[d.provincia] - 4.5)
 						.attr('font-size', '1')
 						.text("Densidad: " + densidad[d.provincia])
-						.attr("class", "negative");
+						.attr("class", "negative")
+						.append('g');
 					svg.append('text')
-						.attr('x', x[d.provincia] + 8)
-						.attr('y', y[d.provincia] - 3)
+						.attr('x', x[d.provincia] + 8.7 + ajusteDialogo)
+						.attr('y', y[d.provincia] - 3.5)
 						.attr('font-size', '1')
-						.text("Evolución: " + evolucion[d.provincia] + "%")
-						.attr("class", "negative");
+						.text("Evolución: " + (Math.round((evolucion[d.provincia] - 100) * 100) / 100) + "%")
+						.attr("class", "negative")
+						.append('g');
+
+					if ((Math.round((evolucion[d.provincia] - 100) * 100) / 100) > 0) {
+						flecha = "imagenes/green.png";
+					} else {
+						flecha = "imagenes/red.png";
+					}
+
+					svg.append('image')
+						.attr('xlink:href', flecha)
+						.attr('x', x[d.provincia] + 15.8 + ajusteDialogo)
+						.attr('y', y[d.provincia] - 5.2)
+						.attr("width", "3%")
+						.attr('height', "3%")
+						.attr("class", "negative")
+						.append('g');
 
 				}
 			});
 
+			// Elementos complementarios del grafico: datos totales, escala de tamanio y color de las figuras, el mapa, etc.
 			svg.append('text')
 				.attr('x', '35%')
 				.attr('y', '88%')
@@ -206,14 +208,14 @@
 				.text("Densidad de población total: " + densidadTotal.toLocaleString('de-DE') + " hab/km");
 		})
 		svg.append('text')
-			.attr('x', 4)
+			.attr('x', 10)
 			.attr('y', 3)
-			.attr('font-size', '4')
+			.attr('font-size', '3.5')
 			.text("Evolución demográfica Castilla y León");
 		svg.append('text')
-			.attr('x', '25%')
+			.attr('x', '27%')
 			.attr('y', 7)
-			.attr('font-size', '4')
+			.attr('font-size', '3.5')
 			.text("2009 - 2014");
 
 		svg.append('image')
@@ -226,41 +228,51 @@
 		svg.append('text')
 			.attr('x', '12%')
 			.attr('y', '78%')
-			.attr('font-size', '3')
-			.text("% Evolución");	
-			
+			.attr('font-size', '2.7')
+			.text("% Evolución");
+
 		svg.append('image')
 			.attr('xlink:href', "imagenes/family2.png")
 			.attr('x', '5%')
-			.attr('y', '81%')
-			.attr('width', '15%')
-			.attr('height', '15%')
+			.attr('y', '80%')
+			.attr('width', '14%')
+			.attr('height', '14%')
 			.attr('id', 'img1');
-			
-		
-
 		svg.append('image')
 			.attr('xlink:href', "imagenes/family2.png")
 			.attr('x', '15%')
-			.attr('y', '84%')
-			.attr('width', '12%')
-			.attr('height', '12%')
-			.attr('id', 'img5');
-
+			.attr('y', '83%')
+			.attr('width', '11%')
+			.attr('height', '11%')
+			.attr('id', 'img2');
 		svg.append('image')
 			.attr('xlink:href', "imagenes/family2.png")
-			.attr('x', '25%')
-			.attr('y', '88%')
+			.attr('x', '24%')
+			.attr('y', '86%')
 			.attr('width', '8%')
 			.attr('height', '8%')
-			.attr('id', 'img9');
-
+			.attr('id', 'img3');
+		svg.append('text')
+			.attr('x', '11%')
+			.attr('y', '96%')
+			.attr('font-size', '1.5')
+			.text("+0");
+		svg.append('text')
+			.attr('x', '20%')
+			.attr('y', '96%')
+			.attr('font-size', '1.5')
+			.text("0");
+		svg.append('text')
+			.attr('x', '27%')
+			.attr('y', '96%')
+			.attr('font-size', '1.5')
+			.text("-0");
 		svg.append('rect')
 			.attr('x', '34%')
 			.attr('y', '83%')
 			.attr('width', '32')
 			.attr('height', '7')
-			.attr('fill', '#99F7FF')
+			.attr('fill', '#a6dafc')
 			.attr('rx', '1')
 			.attr('ry', '1');
 	</script>
